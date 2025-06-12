@@ -8,24 +8,19 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 
 from .models import *
-from .forms import OrderForm, ProductForm, CreateUSerForm
+from .forms import OrderForm, ProductForm, CreateUserForm, CustomerForm
 from .filters import OrderFilter
 from .decorators import unauthenticated_user, allowed_users, admin_only
 # Create your views here.
 
 @unauthenticated_user
 def registerPage(request):
-    form = CreateUSerForm()
+    form = CreateUserForm()
     if request.method == 'POST':
-        form = CreateUSerForm(request.POST)
+        form = CreateUserForm(request.POST)
         if form.is_valid():
-            user = form.save()
+            form.save()
             username = form.cleaned_data.get('username')
-            
-            group = Group.objects.get(name="customer")
-            user.groups.add(group)
-            Customer.objects.create(user=user)
-
             messages.success(request,'Account was created for '+ username)
             return redirect('login')
     context = {'form':form}
@@ -81,6 +76,19 @@ def userPage(request):
               "delivered":delivered,
                         "pending":pending}
     return render(request,'account/user.html',context)
+
+@login_required(login_url="login")
+@allowed_users(allowed_roles=['customer'])
+def accountSettings(request):
+    customer = request.user.customer
+    form = CustomerForm(instance=customer)
+    if request.method == 'POST':
+        form = CustomerForm(request.POST,request.FILES,instance=customer)
+        if form.is_valid():
+            form.save()
+
+    context = {'form':form}
+    return render(request,'account/account_settings.html',context)
 
 @login_required(login_url="login")
 @allowed_users(allowed_roles=['admin'])

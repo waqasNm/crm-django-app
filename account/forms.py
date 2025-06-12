@@ -3,7 +3,13 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
 
-from .models import Order,Product
+from .models import Order,Product,Customer
+
+class CustomerForm(ModelForm):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+        exclude = ['user']
 
 class OrderForm(ModelForm):
     class Meta:
@@ -11,7 +17,7 @@ class OrderForm(ModelForm):
        fields = '__all__' 
 
 
-class CreateUSerForm(UserCreationForm):
+class CreateUserForm(UserCreationForm):
     class Meta:
         model = User
         fields = ['username','email','password1','password2']
